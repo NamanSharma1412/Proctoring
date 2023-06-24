@@ -1,3 +1,6 @@
+# receives and analyzes the transmitted video, outputs the video with facemesh applied and tracks the
+# head and eye movement
+
 import cv2
 import imutils
 import numpy as np
@@ -18,7 +21,7 @@ BUFF_SIZE = 65536
 client_socket = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
 client_socket.setsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF,BUFF_SIZE)
 host_name = socket.gethostname()
-host_ip = '192.168.0.110'
+host_ip = '192.168.0.110'    # Put your IP here
 port = 9990
 host_addr = (host_ip,port)
 message = b'hello'

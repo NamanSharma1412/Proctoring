@@ -1,3 +1,5 @@
+# Transmits the video from the user's machine to be analyzed
+
 import cv2
 import imutils
 import numpy as np
@@ -10,7 +12,7 @@ server_socket = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
 server_socket.setsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF,BUFF_SIZE)
 host_name = socket.gethostname()
 host_ip = socket.gethostbyname(host_name) 
-# print(host_ip)                        # 192.168.196.108
+# print(host_ip) # Run this to get your IP, put your IP in Client.py line 24 to run the stream
 port = 9999
 socket_address = (host_ip,port)
 server_socket.bind(socket_address)
