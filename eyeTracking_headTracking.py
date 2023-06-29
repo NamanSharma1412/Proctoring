@@ -1,20 +1,17 @@
-def euclidean_dist(p1,p2):
-    import math
-    import numpy as np
-    x1,y1 = np.ravel(p1)
-    x2,y2 = np.ravel(p2)
-    return int((math.sqrt(((x2-x1)**2+(y2-y1)**2))))
+import cv2
+import numpy as np
+import mediapipe as mp
+import itertools
+import math
+import json
 
-def analyze_frame(frame):        # input frame of stream video, outputs analyzed frame with facemesh drawing
-    import cv2
-    import imutils
-    import numpy as np
-    import base64
-    import time
-    import socket
-    import mediapipe as mp
-    import itertools
-    import math
+
+def analyze_frame(frame):  
+    def euclidean_dist(p1,p2):
+        x1,y1 = np.ravel(p1)
+        x2,y2 = np.ravel(p2)
+        return int((math.sqrt(((x2-x1)**2+(y2-y1)**2))))      # input frame of stream video, outputs analyzed frame with facemesh drawing
+    res = {}
     mp_face_mesh = mp.solutions.face_mesh
     mp_drawing = mp.solutions.drawing_utils
     drawing_spec = mp_drawing.DrawingSpec(thickness = 1, circle_radius = 1) 
@@ -111,17 +108,23 @@ def analyze_frame(frame):        # input frame of stream video, outputs analyzed
 
             if(dist_left_left>dist_left_right and dist_right_left>dist_right_right):
                 cv2.putText(frame,'right',(50,50),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0),1,cv2.LINE_AA)
+                res['EYE_MOVEMENT'] = "right"
 
             elif(dist_right_left<dist_right_right and dist_left_left<dist_left_right):
                 cv2.putText(frame,'left',(50,50),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0),1,cv2.LINE_AA)
+                res['EYE_MOVEMENT'] = 'left'
 
             elif(dist_left_top>dist_left_bottom+0.1 and dist_right_top>dist_right_bottom+0.1):
                 cv2.putText(frame,'down',(50,50),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0),1,cv2.LINE_AA)
+                res['EYE_MOVEMENT'] = 'down'
+
             elif(dist_left_top+0.1<dist_left_bottom and dist_right_top+0.1<dist_right_bottom):
                 cv2.putText(frame,'up',(50,50),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0),1,cv2.LINE_AA)
+                res['EYE_MOVEMENT'] = 'left'
 
             else:
                 cv2.putText(frame,'center',(50,50),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0),1,cv2.LINE_AA)
+                res['EYE_MOVEMENT'] = 'center'
             
             
             for face_landmark in results.multi_face_landmarks:
@@ -164,25 +167,32 @@ def analyze_frame(frame):        # input frame of stream video, outputs analyzed
 
                 if y < -10:
                     text = "Looking Left"
+                    res['HEAD_MOVEMENT'] = 'Looking Left'
                 elif y > 10:
                     text = "Looking Right"
+                    res['HEAD_MOVEMENT'] = 'Looking Right'
                 elif x < -10:
                     text = "Looking Down"
+                    res['HEAD_MOVEMENT'] = 'Looking Down'
                 elif x > 10:
                     text = "Looking Up"
+                    res['HEAD_MOVEMENT'] = 'Looking Up'
                 else:
                     text = "Forward"
+                    res['HEAD_MOVEMENT'] = 'Looking Forward'
 
                 cv2.putText(frame,text,(50,100),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0),1) 
                 
-            mp_drawing.draw_landmarks(
-                image = frame,
-                landmark_list = face_landmark,
-                connections = mp_face_mesh.FACEMESH_CONTOURS,
-                landmark_drawing_spec=drawing_spec,
-                connection_drawing_spec = drawing_spec
-            )
-
+            # mp_drawing.draw_landmarks(
+            #     image = frame,
+            #     landmark_list = face_landmark,
+            #     connections = mp_face_mesh.FACEMESH_CONTOURS,
+            #     landmark_drawing_spec=drawing_spec,
+            #     connection_drawing_spec = drawing_spec
+            # )
             
+    
 
-    return frame
+    res = json.dumps(res)        
+
+    return frame,res
